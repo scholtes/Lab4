@@ -1,1 +1,0 @@
-cmd_/home/scholtes/Projects/CS4029/Lab4/src/lab4module.ko := ld -r -m elf_x86_64 -T ./scripts/module-common.lds --build-id  -o /home/scholtes/Projects/CS4029/Lab4/src/lab4module.ko /home/scholtes/Projects/CS4029/Lab4/src/lab4module.o /home/scholtes/Projects/CS4029/Lab4/src/lab4module.mod.o
