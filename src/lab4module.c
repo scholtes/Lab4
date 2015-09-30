@@ -6,6 +6,9 @@
  * This module uses ACPI to discover battery status,
  * and writes that status to a /proc file
  *
+ * My system's call (at /sys/class/power_supply/BAT0/device/path):
+ *    \_SB_.PCI0.BAT0
+ *
  */
 
 #include <linux/kernel.h>
