@@ -25,7 +25,7 @@ MODULE_LICENSE("GPL");
 static struct proc_dir_entry *lab4_procfile;
 
 int *get_battery_status(void) {
-    static int ret[3] = {1, 2, 3};
+    static int ret[5] = {1, 2, 3, 4, 5};
 
     acpi_status status;
     acpi_handle handle;
@@ -56,10 +56,12 @@ int *get_battery_status(void) {
 int lab4_proc_show(struct seq_file *m, void *v) {
     int *bat_info;
     bat_info = get_battery_status();
-    seq_printf(m, "%d\n%d\n%d\n",
+    seq_printf(m, "%d %d %d %d %d\n",
         bat_info[0],
         bat_info[1],
-        bat_info[2]
+        bat_info[2],
+        bat_info[3],
+        bat_info[4]
     );
 
     return 0;

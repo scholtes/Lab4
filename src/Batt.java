@@ -124,30 +124,24 @@ class BattFrame extends JFrame {
      account for computing time left when charged or charging.  Perhaps
      just not showing time left in those cases is enough.   */
    public void getBattStats () {
-      FileInputStream finfo = null, fstat = null;
+      FileInputStream finfo = null;
       StringTokenizer t;
       String input;
 
       /* First open the files, then read from them */
       try {
 	 finfo = 
-	    new FileInputStream("battery_info.txt");
+	    new FileInputStream("/proc/lab4battery");
 	 BufferedReader inf = new BufferedReader(new FileReader(finfo.getFD()));
-	 fstat =
-	    new FileInputStream("battery_stat.txt");
-	 BufferedReader sta = new BufferedReader(new FileReader(fstat.getFD()));
 	 try {
 	    /* Read battery information (_BIF) for capacity */
 	    input = inf.readLine();
 	    t = new StringTokenizer(input, " ");
 	    power_unit = Integer.parseInt(t.nextToken());
-	    t.nextToken();
 	    last_fc = Integer.parseInt(t.nextToken());  /* capacity is here */
 
 	    /* Read battery status (_BST) for charge state, discharge rate,
                remaining charge */
-	    input = sta.readLine();
-	    t = new StringTokenizer(input, " ");
 	    charge_state = Integer.parseInt(t.nextToken());
 	    rate = Integer.parseInt(t.nextToken());
 	    rem = Integer.parseInt(t.nextToken());
@@ -158,14 +152,12 @@ class BattFrame extends JFrame {
 	    bc.setPercent((rem*100)/last_fc);
 	 } catch (NullPointerException r) {
 	    finfo.close();
-	    fstat.close();
 	 }
       } catch (Exception e) {
 	 System.out.println("File not found: "+e.toString());
       }
       try {
 	 if (finfo != null) finfo.close();
-	 if (fstat != null) fstat.close();
       } catch (Exception e) { }
    }
 
