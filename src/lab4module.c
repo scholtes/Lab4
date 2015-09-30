@@ -25,28 +25,38 @@ MODULE_LICENSE("GPL");
 static struct proc_dir_entry *lab4_procfile;
 
 int *get_battery_status(void) {
-    static int ret[5] = {1, 2, 3, 4, 5};
+    static int ret[5] = { 0, 0, 0, 0, 0 };
 
     acpi_status status;
     acpi_handle handle;
     union acpi_object *result;
-    struct acpi_buffer buffer = {ACPI_ALLOCATE_BUFFER, NULL};
-    int chrg_dischrg, charge, y;
+    struct acpi_buffer buffer1 = {ACPI_ALLOCATE_BUFFER, NULL};
+    struct acpi_buffer buffer2 = {ACPI_ALLOCATE_BUFFER, NULL};
+    int bst_state, bst_rate, bst_rem, bif_power_unit, bif_last_fc;
 
     status = acpi_get_handle(NULL, (acpi_string)"\\_SB_.PCI0.BAT0", &handle);
 
-    status = acpi_evaluate_object(handle, "_BST", NULL, &buffer);
-    result = buffer.pointer;
+    status = acpi_evaluate_object(handle, "_BST", NULL, &buffer1);
+    result = buffer1.pointer;
 
     if(result) {
-        chrg_dischrg = result->package.elements[0].integer.value;
-        charge = result->package.elements[2].integer.value;
-        kernel_fpu_begin();
-        y = (int)(charge/1.0);
-        kernel_fpu_end();
-        ret[0] = chrg_dischrg;
-        ret[1] = charge;
-        ret[2] = y;
+        bst_state = result->package.elements[0].integer.value;
+        bst_rate = result->package.elements[1].integer.value;
+        bst_rem = result->package.elements[2].integer.value;
+        ret[2] = bst_state;
+        ret[3] = bst_rate;
+        ret[4] = bst_rem;
+        kfree(result);
+    }
+
+    status = acpi_evaluate_object(handle, "_BIF", NULL, &buffer2);
+    result = buffer2.pointer;
+
+    if(result) {
+        bif_power_unit = result->package.elements[0].integer.value;
+        bif_last_fc = result->package.elements[2].integer.value;
+        ret[0] = bif_power_unit;
+        ret[1] = bif_last_fc;
         kfree(result);
     }
 
