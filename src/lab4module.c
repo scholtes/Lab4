@@ -15,7 +15,7 @@
 #include <linux/module.h>
 #include <linux/proc_fs.h>
 #include <linux/seq_file.h>
-#include <acpi/acpi.h>
+#include <linux/acpi.h>
 #include <asm/i387.h>
 
 #define procfs_name "lab4battery"
@@ -24,8 +24,44 @@ MODULE_LICENSE("GPL");
 
 static struct proc_dir_entry *lab4_procfile;
 
+int *get_battery_status(void) {
+    static int ret[3] = {1, 2, 3};
+
+    acpi_status status;
+    acpi_handle handle;
+    union acpi_object *result;
+    struct acpi_buffer buffer = {ACPI_ALLOCATE_BUFFER, NULL};
+    int chrg_dischrg, charge, y;
+
+    status = acpi_get_handle(NULL, (acpi_string)"\\_SB_.PCI0.BAT0", &handle);
+
+    status = acpi_evaluate_object(handle, "_BST", NULL, &buffer);
+    result = buffer.pointer;
+
+    if(result) {
+        chrg_dischrg = result->package.elements[0].integer.value;
+        charge = result->package.elements[2].integer.value;
+        kernel_fpu_begin();
+        y = (int)(charge/1.0);
+        kernel_fpu_end();
+        ret[0] = chrg_dischrg;
+        ret[1] = charge;
+        ret[2] = y;
+        kfree(result);
+    }
+
+    return ret;
+}
+
 int lab4_proc_show(struct seq_file *m, void *v) {
-    seq_printf(m, "Nothing right now");
+    int *bat_info;
+    bat_info = get_battery_status();
+    seq_printf(m, "%d\n%d\n%d\n",
+        bat_info[0],
+        bat_info[1],
+        bat_info[2]
+    );
+
     return 0;
 }
 
@@ -48,7 +84,7 @@ int init_module( void ) {
 
     lab4_procfile = proc_create(procfs_name, 0, NULL, &proc_file_fops);
 
-    printk("/proc file created for Lab4 battery");
+    printk("/proc file created for Lab4 battery\n");
 
     return 0;
 }
