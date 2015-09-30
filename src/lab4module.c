@@ -15,17 +15,17 @@
 #include <linux/module.h>
 #include <linux/proc_fs.h>
 #include <linux/seq_file.h>
+#include <acpi/acpi.h>
+#include <asm/i387.h>
 
 #define procfs_name "lab4battery"
 
 MODULE_LICENSE("GPL");
 
 static struct proc_dir_entry *lab4_procfile;
-static int soopercount = 0;
 
 int lab4_proc_show(struct seq_file *m, void *v) {
-    seq_printf(m, "soopercount = %d", soopercount);
-    soopercount += 1;
+    seq_printf(m, "Nothing right now");
     return 0;
 }
 
