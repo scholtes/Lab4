@@ -8,6 +8,24 @@
  *
  * My system's call (at /sys/class/power_supply/BAT0/device/path):
  *    \_SB_.PCI0.BAT0
+ * 
+ * The module does not report a battery status every second, but rather
+ * reports the battery status to a /proc file whenever the /proc file
+ * is read. In this manner, the module reports lazily and is CPU friendly.
+ *
+ * Demonstration:
+ * 
+ *     usr$ cat /proc/lab4battery
+ *     0 50000 0 0  50000
+ * 
+ * The order of the parameters given is power unit, last full charge, state
+ * discharge rate, and remaining capacity. So the values above mean:
+ * 
+ *    -Capacity reported in milliwatt hours
+ *    -Last full charge was 50000 mWh
+ *    -Charger plugged in
+ *    -Current discharge rate = 0 (because charging)
+ *    -Current charge is 50000 mWh (fully charged)
  *
  */
 
