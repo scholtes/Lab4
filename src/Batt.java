@@ -96,7 +96,7 @@ if discharging, and not appearing if not discharging or charging; the text
 section which shows the percentage of charge remaining above the green line
 and the time remaining, below the green line.  */
 class BattFrame extends JFrame {
-    int charge_state, rate, rem, last_fc, power_unit;
+    int charge_state, t_est, rem, last_fc, power_unit, t_now, c_init;
     BattCanvas bc;
     TextCanvas tc;
     ChargeCanvas cc;
@@ -109,6 +109,8 @@ class BattFrame extends JFrame {
         add ("Center", tc = new TextCanvas());
         bc.setSize(15,d.height);
         cc.setSize(15,d.height);
+        charge_state = 0;
+        t_now = 0;
     }
 
     /* This function computes the values needed by all sections and 
@@ -127,6 +129,7 @@ class BattFrame extends JFrame {
         FileInputStream finfo = null;
         StringTokenizer t;
         String input;
+        int old_charge_state;
 
         /* First open the files, then read from them */
         try {
@@ -142,17 +145,35 @@ class BattFrame extends JFrame {
 
                 /* Read battery status (_BST) for charge state, discharge rate,
                 remaining charge */
+                old_charge_state = charge_state;
                 charge_state = Integer.parseInt(t.nextToken());
-                rate = Integer.parseInt(t.nextToken());
+                t.nextToken();
                 rem = Integer.parseInt(t.nextToken());
+
+                // Change of state means we need to update our time values
+                // in order to estimate remaining battery time
+                if(old_charge_state != charge_state) {
+                    t_now = 0;
+                    c_init = rem;
+                    if(charge_state == 0) {
+                        System.out.println("The charger was plugged in");
+                    } else {
+                        System.out.println("The charger was unplugged");
+                    }
+                }
+
+                // Battery discharge rate doesn't report correctly so
+                // we extrapolate the discharge time.
+                try{
+                    t_est = (int)(t_now*(c_init/(double)(c_init-rem)));
+                    t_est /= 60;
+                } catch (ArithmeticException e) {
+                    t_est = 0;
+                }
 
                 /* Set values in applet sections */
                 cc.setChargeState(charge_state);
-                try {
-                    tc.setText((rem*100)/last_fc,rem/rate);
-                } catch (ArithmeticException e) {
-                    tc.setText((rem*100)/last_fc, 0);
-                }
+                tc.setText((rem*100)/last_fc,t_est);
                 bc.setPercent((rem*100)/last_fc);
             } catch (NullPointerException r) {
                 finfo.close();
@@ -168,7 +189,7 @@ class BattFrame extends JFrame {
     /* Read the files once a second and report */
     public void doit() {
         while (true) {
-            try { Thread.sleep(1000); } catch (InterruptedException e) { }
+            try { Thread.sleep(1000); t_now += 1; } catch (InterruptedException e) { }
             getBattStats();
             bc.repaint();
             cc.repaint();
