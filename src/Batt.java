@@ -148,7 +148,11 @@ class BattFrame extends JFrame {
 
 	    /* Set values in applet sections */
 	    cc.setChargeState(charge_state);
-	    tc.setText((rem*100)/last_fc,rem/rate);
+	    try {
+         tc.setText((rem*100)/last_fc,rem/rate);
+       } catch (ArithmeticException e) {
+         tc.setText((rem*100)/last_fc, 0);
+       }
 	    bc.setPercent((rem*100)/last_fc);
 	 } catch (NullPointerException r) {
 	    finfo.close();
